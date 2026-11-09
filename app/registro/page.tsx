@@ -18,11 +18,18 @@ export default function RegistroPage() {
     setError("");
     setLoading(true);
 
-    const { data, error } = await supabase.auth.signUp({
-      email,
+    // Limpiar datos del usuario anterior en este navegador
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith("lienzoia-")) localStorage.removeItem(key);
+    });
+
+    const { error } = await supabase.auth.signUp({
+      email: email.trim(),
       password,
       options: {
-        data: { nombre },
+        data: {
+          nombre: nombre.trim(),
+        },
       },
     });
 
@@ -33,7 +40,6 @@ export default function RegistroPage() {
       return;
     }
 
-    // Después del registro → onboarding del emprendimiento
     router.push("/onboarding");
   }
 
@@ -58,8 +64,8 @@ export default function RegistroPage() {
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
               required
-              className="w-full rounded-xl border border-stone-200 px-4 py-3 text-sm outline-none focus:border-emerald-500"
-              placeholder="Ana María"
+              className="w-full rounded-xl border border-stone-200 px-4 py-3 text-sm text-stone-800 bg-white outline-none focus:border-emerald-500"
+              placeholder="Ej: Laura"
             />
           </div>
 
@@ -72,7 +78,7 @@ export default function RegistroPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full rounded-xl border border-stone-200 px-4 py-3 text-sm outline-none focus:border-emerald-500"
+              className="w-full rounded-xl border border-stone-200 px-4 py-3 text-sm text-stone-800 bg-white outline-none focus:border-emerald-500"
               placeholder="tu@correo.com"
             />
           </div>
@@ -87,7 +93,7 @@ export default function RegistroPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
-              className="w-full rounded-xl border border-stone-200 px-4 py-3 text-sm outline-none focus:border-emerald-500"
+              className="w-full rounded-xl border border-stone-200 px-4 py-3 text-sm text-stone-800 bg-white outline-none focus:border-emerald-500"
               placeholder="••••••••"
             />
           </div>

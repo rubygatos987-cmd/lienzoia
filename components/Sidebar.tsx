@@ -20,9 +20,16 @@ export default function Sidebar() {
   const [proyectos, setProyectos] = useState<Proyecto[]>([]);
   const [currentId, setCurrentId] = useState<number | null>(null);
   const [userName, setUserName] = useState("Usuario");
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     load();
+
+    function onChange() {
+      load();
+    }
+    window.addEventListener("project-changed", onChange);
+    return () => window.removeEventListener("project-changed", onChange);
   }, []);
 
   async function load() {
@@ -34,6 +41,8 @@ export default function Sidebar() {
 
     const meta = user.user_metadata as { nombre?: string };
     if (meta?.nombre) setUserName(meta.nombre);
+    else if (user.email) setUserName(user.email.split("@")[0]);
+    else setUserName("Usuario");
 
     const { data } = await supabase
       .from("proyectos")
@@ -65,8 +74,9 @@ export default function Sidebar() {
 
   async function cerrarSesion() {
     await supabase.auth.signOut();
-    localStorage.removeItem(CURRENT_PROJECT_KEY);
-    localStorage.removeItem("lienzoia-canvas-answers");
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith("lienzoia-")) localStorage.removeItem(key);
+    });
     router.push("/login");
   }
 
@@ -78,7 +88,17 @@ export default function Sidebar() {
 
   function progreso(p: Proyecto) {
     const lienzo = p.lienzo || {};
-    const keys = Object.keys(lienzo).filter((k) => k !== "_meta");
+    const keys = [
+      "propuesta",
+      "clientes",
+      "canales",
+      "relaciones",
+      "ingresos",
+      "recursos",
+      "actividades",
+      "socios",
+      "costos",
+    ];
     const done = keys.filter((k) => {
       const v = lienzo[k];
       return Array.isArray(v) && v.some((x) => String(x).trim() !== "");
@@ -169,21 +189,34 @@ export default function Sidebar() {
       </div>
 
       <div className="mt-auto pt-4 border-t border-stone-200 hidden md:block">
-        <div className="flex items-center gap-3 mb-3">
+        <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-stone-300 flex items-center justify-center text-sm font-bold text-stone-700">
             {userName.slice(0, 2).toUpperCase()}
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold truncate">{userName}</p>
             <p className="text-xs text-stone-500">Mi cuenta</p>
           </div>
+          <div className="relative">
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="text-stone-400 hover:text-stone-700 px-1"
+              aria-label="Menú"
+            >
+              •••
+            </button>
+            {menuOpen && (
+              <div className="absolute bottom-full right-0 mb-2 bg-white border border-stone-200 rounded-xl shadow-lg py-1 min-w-[150px] z-50">
+                <button
+                  onClick={cerrarSesion}
+                  className="w-full text-left px-4 py-2 text-sm text-rose-700 hover:bg-rose-50"
+                >
+                  Cerrar sesión
+                </button>
+              </div>
+            )}
+          </div>
         </div>
-        <button
-          onClick={cerrarSesion}
-          className="w-full text-left text-xs text-stone-500 hover:text-rose-600 px-1"
-        >
-          Cerrar sesión
-        </button>
       </div>
     </aside>
   );

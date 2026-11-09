@@ -34,7 +34,7 @@ function contarCompletados(lienzo?: Record<string, unknown>) {
 export default function DashboardPage() {
   const [proyecto, setProyecto] = useState<Proyecto | null>(null);
   const [totalProyectos, setTotalProyectos] = useState(0);
-  const [userName, setUserName] = useState("Ana María");
+  const [userName, setUserName] = useState("Usuario");
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
@@ -48,9 +48,11 @@ export default function DashboardPage() {
           return;
         }
 
-        const meta = user.user_metadata as { nombre?: string };
-        if (meta?.nombre) setUserName(meta.nombre);
-
+       const meta = user.user_metadata as { nombre?: string };
+       if (meta?.nombre) setUserName(meta.nombre);
+       else if (user.email) setUserName(user.email.split("@")[0]);
+       else setUserName("Usuario");
+       
         const { data: lista } = await supabase
           .from("proyectos")
           .select("id, nombre, lienzo")

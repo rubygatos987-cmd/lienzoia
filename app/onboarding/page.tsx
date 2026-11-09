@@ -54,7 +54,7 @@ export default function OnboardingPage() {
     }
   }
 
-    async function handleContinuar(e: React.FormEvent) {
+  async function handleContinuar(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     setLoading(true);
@@ -92,7 +92,6 @@ export default function OnboardingPage() {
       return;
     }
 
-    // Proyecto nuevo = lienzo vacío (no hereda el anterior)
     if (creado?.id) {
       localStorage.setItem("lienzoia-current-project-id", String(creado.id));
       localStorage.setItem(
@@ -102,7 +101,8 @@ export default function OnboardingPage() {
     }
     localStorage.removeItem("lienzoia-canvas-answers");
 
-    router.push("/dashboard/lienzo");
+    window.dispatchEvent(new Event("project-changed"));
+    router.push("/dashboard");
   }
 
   return (
